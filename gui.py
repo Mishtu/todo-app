@@ -1,6 +1,11 @@
 import functions
 import PySimpleGUI as psg
 import time
+import os
+
+if not os.path.exists("todos.txt"):
+    with open("todos.txt", 'w') as file:
+        pass
 
 psg.theme("Dark")
 
@@ -62,7 +67,10 @@ while True:
         case 'Exit':
             break
         case 'todos':
-            window['todo'].update(value=values['todos'][0])
+            try:
+                window['todo'].update(value=values['todos'][0])
+            except IndexError:
+                continue
         case psg.WINDOW_CLOSED:
             break
 
