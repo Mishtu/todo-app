@@ -1,7 +1,10 @@
 import functions
 import PySimpleGUI as psg
+import time
 
+psg.theme("Dark")
 
+clock = psg.Text("", key="clock")
 label = psg.Text("Type in a to-do")
 input_box = psg.InputText(tooltip="Enter a to-do", key="todo")
 add_button = psg.Button("Add")
@@ -12,17 +15,17 @@ complete_button = psg.Button("Complete")
 exit_button = psg.Button("Exit")
 
 window = psg.Window('To-Do App',
-                    layout=[[label],
+                    layout=[[clock],
+                            [label],
                             [input_box, add_button],
                             [list_box, edit_button, complete_button],
                             [exit_button]],
-                    font=('Helvetica', 20))
+                    font=('Helvetica', 18))
 
 while True:
-    event, values = window.read()
-    print(event)
-    print(values)
-    print(values['todos'])
+    event, values = window.read(timeout=200)
+    window["clock"].update(value=time.strftime("%A, %b %d, %Y %H:%M:%S"))
+
     match event:
         case 'Add':
             todos = functions.get_todos()
@@ -31,21 +34,26 @@ while True:
             functions.write_todos(todos)
             window['todos'].update(values=todos)
         case 'Edit':
-            todo_to_edit = values['todos'][0]
-            new_todo = values['todo'] + '\n'
-
-            todos = functions.get_todos()
-            index = todos.index(todo_to_edit)
-            todos[index] = new_todo
-            functions.write_todos(todos)
-            window['todos'].update(values=todos)
+            try:
+                todo_to_edit = values['todos'][0]
+                new_todo = values['todo'] + '\n'
+                todos = functions.get_todos()
+                index = todos.index(todo_to_edit)
+                todos[index] = new_todo
+                functions.write_todos(todos)
+                window['todos'].update(values=todos)
+            except IndexError:
+                psg.popup("Please select a todo first", font=("Helvetica", 18))
         case 'Complete':
-            todo_to_complete = values['todos'][0]
-            todos = functions.get_todos()
-            todos.remove(todo_to_complete)
-            functions.write_todos(todos)
-            window['todos'].update(values=todos)
-            window['todo'].update(value='')
+            try:
+                todo_to_complete = values['todos'][0]
+                todos = functions.get_todos()
+                todos.remove(todo_to_complete)
+                functions.write_todos(todos)
+                window['todos'].update(values=todos)
+                window['todo'].update(value='')
+            except IndexError:
+                psg.popup("Please select a todo first", font=("Helvetica", 18))
         case 'Exit':
             break
         case 'todos':
